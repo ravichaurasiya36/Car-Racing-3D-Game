@@ -36,7 +36,7 @@ html, body {
   color: var(--text-main);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 /* Canvas full screen */
@@ -48,7 +48,7 @@ html, body {
   height: 100vh;
   z-index: 1;
   display: block;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 /* Glassmorphism UI HUD Container */
@@ -64,7 +64,7 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   padding: calc(1.25rem + var(--sat)) calc(1.25rem + var(--sar)) calc(1.25rem + var(--sab)) calc(1.25rem + var(--sal));
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 /* Interactive element support */
@@ -481,7 +481,7 @@ html, body {
 
 .touch-controls-overlay {
   position: absolute;
-  bottom: calc(1.25rem + var(--sab));
+  bottom: calc(7.75rem + var(--sab));
   left: calc(1.25rem + var(--sal));
   right: calc(1.25rem + var(--sar));
   display: flex;
@@ -712,7 +712,7 @@ html, body {
   }
 
   .touch-controls-overlay {
-    bottom: calc(0.85rem + var(--sab));
+    bottom: calc(7.0rem + var(--sab));
     left: calc(0.85rem + var(--sal));
     right: calc(0.85rem + var(--sar));
   }
@@ -789,7 +789,7 @@ html, body {
   }
 
   .touch-controls-overlay {
-    bottom: calc(0.75rem + var(--sab));
+    bottom: calc(6.6rem + var(--sab));
     left: calc(0.75rem + var(--sal));
     right: calc(0.75rem + var(--sar));
   }
@@ -1462,12 +1462,17 @@ html, body {
 @media (max-width: 680px) {
   #race-start-overlay {
     padding: calc(1rem + var(--sat)) 1rem calc(1rem + var(--sab)) 1rem;
+    align-items: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
   }
 
   .start-glass-card {
     padding: 1.4rem 1.1rem;
     gap: 1rem;
     max-width: 100%;
+    margin: auto;
   }
 
   .start-title {

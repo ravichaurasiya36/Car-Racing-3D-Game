@@ -18,15 +18,7 @@ export class InputManager {
     window.addEventListener('keydown', (e) => this.handleKey(e, true));
     window.addEventListener('keyup', (e) => this.handleKey(e, false));
 
-    // Touch Event Gesture Shielding (Prevent mobile pull-to-refresh & pinch-zoom)
-    const preventDefaultTouch = (e) => {
-      if (e.target && (e.target.tagName === 'CANVAS' || e.target.id === 'hud-container')) {
-        if (e.cancelable) e.preventDefault();
-      }
-    };
-
-    window.addEventListener('touchstart', preventDefaultTouch, { passive: false });
-    window.addEventListener('touchmove', preventDefaultTouch, { passive: false });
+    // Touch Event Gesture Shielding (Prevent right click / context menu)
     window.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 

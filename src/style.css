@@ -493,7 +493,7 @@ html, body {
 
 .touch-cluster {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   pointer-events: auto;
 }
 
@@ -518,7 +518,7 @@ html, body {
 }
 
 .touch-btn .btn-icon {
-  font-size: 1.25rem;
+  font-size: 1.7rem;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -528,7 +528,7 @@ html, body {
 
 .touch-btn .btn-label {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 1px;
   line-height: 1;
@@ -536,8 +536,8 @@ html, body {
 
 /* Steering Cluster (Bottom Left) */
 .steer-cluster .touch-btn {
-  width: 64px;
-  height: 64px;
+  width: 90px;
+  height: 90px;
   border-color: rgba(0, 240, 255, 0.35);
   color: var(--accent-cyan);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 12px rgba(0, 240, 255, 0.12);
@@ -555,14 +555,14 @@ html, body {
 /* Accelerator & Brake Cluster (Right Side) */
 .accel-cluster {
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .accel-cluster .touch-btn {
-  width: 96px;
-  height: 56px;
+  width: 130px;
+  height: 80px;
   border-radius: 16px;
-  padding: 0 12px;
+  padding: 0 16px;
 }
 
 /* Up / Accelerate Button */
@@ -670,21 +670,21 @@ html, body {
   }
 
   .steer-cluster .touch-btn {
-    width: 60px;
-    height: 60px;
+    width: 84px;
+    height: 84px;
   }
 
   .accel-cluster .touch-btn {
-    width: 90px;
-    height: 52px;
+    width: 120px;
+    height: 76px;
   }
 
   .touch-btn .btn-icon {
-    font-size: 1.15rem;
+    font-size: 1.5rem;
   }
 
   .touch-btn .btn-label {
-    font-size: 0.68rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -718,13 +718,13 @@ html, body {
   }
 
   .steer-cluster .touch-btn {
-    width: 58px;
-    height: 58px;
+    width: 80px;
+    height: 80px;
   }
 
   .accel-cluster .touch-btn {
-    width: 88px;
-    height: 50px;
+    width: 114px;
+    height: 72px;
   }
 }
 
@@ -795,24 +795,24 @@ html, body {
   }
 
   .steer-cluster .touch-btn {
-    width: 54px;
-    height: 54px;
+    width: 76px;
+    height: 76px;
     border-radius: 14px;
   }
 
   .accel-cluster .touch-btn {
-    width: 82px;
-    height: 48px;
+    width: 108px;
+    height: 68px;
     border-radius: 14px;
-    padding: 0 8px;
+    padding: 0 12px;
   }
 
   .touch-btn .btn-icon {
-    font-size: 1.05rem;
+    font-size: 1.4rem;
   }
 
   .touch-btn .btn-label {
-    font-size: 0.64rem;
+    font-size: 0.8rem;
     letter-spacing: 0.5px;
   }
 }
@@ -862,24 +862,24 @@ html, body {
   }
 
   .steer-cluster .touch-btn {
-    width: 50px;
-    height: 50px;
+    width: 72px;
+    height: 72px;
     border-radius: 12px;
   }
 
   .accel-cluster .touch-btn {
-    width: 80px;
-    height: 44px;
+    width: 106px;
+    height: 64px;
     border-radius: 12px;
-    padding: 0 8px;
+    padding: 0 10px;
   }
 
   .touch-btn .btn-icon {
-    font-size: 1rem;
+    font-size: 1.35rem;
   }
 
   .touch-btn .btn-label {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
     letter-spacing: 0.5px;
   }
 }

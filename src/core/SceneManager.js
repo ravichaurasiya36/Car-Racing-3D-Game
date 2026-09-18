@@ -93,9 +93,14 @@ export class SceneManager {
     this.sunLight.position.set(80, 110, 50);
     this.sunLight.castShadow = true;
 
-    // High resolution shadow map covering active driving zone
-    this.sunLight.shadow.mapSize.width = 2048;
-    this.sunLight.shadow.mapSize.height = 2048;
+    // 0. Mobile Detection (Same as Engine)
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
+
+    // High resolution shadow map covering active driving zone (Scaled down for mobile)
+    const shadowRes = isMobile ? 1024 : 2048;
+    this.sunLight.shadow.mapSize.width = shadowRes;
+    this.sunLight.shadow.mapSize.height = shadowRes;
     this.sunLight.shadow.camera.near = 10;
     this.sunLight.shadow.camera.far = 280;
 

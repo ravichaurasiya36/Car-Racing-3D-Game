@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="3D Car Racing Game Built with Three.js and Vite">
+  <title>Apex Velocity 3D - Car Racing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <!-- WebGL Render Canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD Overlay -->
+  <div id="hud-container">
+    <header class="hud-header">
+      <div class="brand">
+        <span class="logo-icon">🏎️</span>
+        <div class="logo-text">
+          <h1>APEX VELOCITY</h1>
+          <span class="subtitle">3D RACING ENGINE</span>
+        </div>
+      </div>
+
+      <!-- Telemetry Header Badges -->
+      <div class="header-telemetry">
+        <div class="lap-badge">LAP <span id="lap-value" class="highlight">1 / 3</span></div>
+        <div class="speedometer-badge">
+          <span id="speed-value">0</span>
+          <span class="unit">KM/H</span>
+        </div>
+        <div class="system-badge">
+          <span class="status-dot"></span>
+          <span id="fps-counter">60 FPS</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub-header Race Telemetry Panel -->
+    <div class="hud-telemetry-panel">
+      <div class="telemetry-box glass-card">
+        <div class="telemetry-item"><span class="label">TIME</span><span id="total-time-val" class="val">00:00.000</span></div>
+        <div class="telemetry-item"><span class="label">LAP</span><span id="lap-time-val" class="val">00:00.000</span></div>
+        <div class="telemetry-item"><span class="label">BEST</span><span id="best-time-val" class="val highlight">--:--.---</span></div>
+      </div>
+    </div>
+
+    <!-- Wrong Way Alert Badge -->
+    <div id="wrong-way-badge" class="warning-badge" style="display: none;">
+      ⚠️ WRONG WAY
+    </div>
+
+    <!-- Centered Countdown Overlay -->
+    <div id="countdown-overlay" class="countdown-container">
+      <div id="countdown-text" class="countdown-num">3</div>
+    </div>
+
+    <!-- Finish Screen Modal Overlay -->
+    <div id="finish-modal" class="modal-overlay">
+      <div class="modal-card glass-card">
+        <div class="modal-icon">🏁</div>
+        <h2>RACE COMPLETE</h2>
+        <div class="finish-stats">
+          <div class="stat-row">
+            <span class="stat-label">TOTAL TIME</span>
+            <span id="finish-total-time" class="stat-val">00:00.000</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">BEST LAP</span>
+            <span id="finish-best-time" class="stat-val highlight">00:00.000</span>
+          </div>
+        </div>
+        <button id="restart-race-btn" class="action-btn">RESTART RACE</button>
+      </div>
+    </div>
+
+    <footer class="hud-footer">
+      <div class="controls-hint desktop-controls-hint glass-card">
+        <span class="hint-title">CONTROLS</span>
+        <div class="key-group">
+          <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+          <span class="divider">or</span>
+          <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span>
+          <span class="key-desc">Steer / Accelerate / Brake</span>
+        </div>
+      </div>
+      <div class="input-status desktop-controls-hint glass-card" id="active-keys-display">
+        Input: <span id="keys-list" class="none">None</span>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -595,7 +595,7 @@ export class TrackDecorations {
       trunkMesh.castShadow = true;
       foliageMesh.castShadow = false;
       trunkMesh.receiveShadow = true;
-      foliageMesh.receiveShadow = true;
+      foliageMesh.receiveShadow = false;
 
       let idx = 0;
       for (let i = sp; i < treePositions.length && idx < count; i += speciesCount) {

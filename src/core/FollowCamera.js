@@ -113,9 +113,7 @@ export class FollowCamera {
     // Smooth Framerate-Independent Lerp
     const lerpFactor = 1 - Math.exp(-this.smoothSpeed * delta);
 
-    this.currentPosition.x += (idealX - this.currentPosition.x) * lerpFactor;
-    this.currentPosition.y += (idealY - this.currentPosition.y) * lerpFactor;
-    this.currentPosition.z += (idealZ - this.currentPosition.z) * lerpFactor;
+    this.currentPosition.set(idealX, idealY, idealZ);
 
     this.currentLookAt.x += (idealLookX - this.currentLookAt.x) * lerpFactor;
     this.currentLookAt.y += (idealLookY - this.currentLookAt.y) * lerpFactor;

@@ -513,12 +513,15 @@ export class TrackDecorations {
       const tangent = this.curve.getTangentAt(u).normalize();
       const right = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
-      // Tree scatter distances (strictly 18m to 175m from track centerline)
-      const treeDistances = [18, 26, 36, 50, 72, 105, 145];
+      // Tree scatter distances (Sparse open-field / Icelandic countryside feel)
+      const treeDistances = [28, 65, 115];
       for (const side of [-1, 1]) {
         for (const dist of treeDistances) {
-          const jitterX = (Math.random() - 0.5) * 6;
-          const jitterZ = (Math.random() - 0.5) * 6;
+          // Drastically reduce tree count (only keep ~12% of candidate spots) to create sparse environment
+          if (Math.random() > 0.12) continue;
+
+          const jitterX = (Math.random() - 0.5) * 12;
+          const jitterZ = (Math.random() - 0.5) * 12;
           const pos = point.clone().addScaledVector(right, side * (dist + Math.random() * 5));
           pos.x += jitterX;
           pos.z += jitterZ;
@@ -549,7 +552,7 @@ export class TrackDecorations {
 
       // Bush scatter distances (12m to 16m from track centerline, just outside guardrail)
       for (const side of [-1, 1]) {
-        if (i % 2 === 0) {
+        if (i % 2 === 0 && Math.random() < 0.25) { // Reduced bush density for open feel
           const bDist = 12.5 + Math.random() * 3.5;
           const bPos = point.clone().addScaledVector(right, side * bDist);
           bPos.x += (Math.random() - 0.5) * 2;

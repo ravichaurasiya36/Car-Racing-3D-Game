@@ -122,6 +122,7 @@ class GameApp {
         this.hideAllScreens();
         this.applySelectedVehicleToCar();
         this.resetGridPositions();
+        this.setMobileOrientation('landscape');
         this.raceManager.startCountdown();
       },
       () => {
@@ -129,6 +130,7 @@ class GameApp {
         this.hideAllScreens();
         const selectedVehicle = this.applySelectedVehicleToCar();
         this.resetGridPositions();
+        this.setMobileOrientation('portrait');
         this.raceManager.showMenu();
         if (this.mainMenu) {
           this.mainMenu.show(selectedVehicle);
@@ -164,6 +166,7 @@ class GameApp {
         this.hideAllScreens();
         const selectedVehicle = this.applySelectedVehicleToCar();
         this.resetGridPositions();
+        this.setMobileOrientation('portrait');
         this.raceManager.showMenu();
         if (this.mainMenu) {
           this.mainMenu.show(selectedVehicle);
@@ -179,6 +182,7 @@ class GameApp {
         this.hideAllScreens();
         this.applySelectedVehicleToCar();
         this.resetGridPositions();
+        this.setMobileOrientation('landscape');
         this.raceManager.startCountdown();
       },
       () => {
@@ -186,6 +190,7 @@ class GameApp {
         this.hideAllScreens();
         const selectedVehicle = this.applySelectedVehicleToCar();
         this.resetGridPositions();
+        this.setMobileOrientation('portrait');
         this.raceManager.showMenu();
         if (this.mainMenu) {
           this.mainMenu.show(selectedVehicle);
@@ -379,7 +384,8 @@ class GameApp {
     window.gameApp = this;
     window.enableAutopilot = () => { if (window.gameApp) window.gameApp.autopilotEnabled = true; };
 
-    console.log('✨ 3D Car Racing Engine active! Single-player mode live.');
+    this.setMobileOrientation('portrait');
+    console.log('🏎️ 3D Car Racing Engine active! Single-player mode live.');
   }
 
   hideAllScreens() {
@@ -559,6 +565,30 @@ class GameApp {
       this.trackDecorations.update(delta, elapsedTime);
     }
     this.sceneManager.update(this.carController.getPosition());
+  }
+
+  setMobileOrientation(mode) {
+    try {
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (!isMobile) return;
+
+      if (mode === 'landscape') {
+        document.body.classList.add('is-racing-mobile');
+        if (screen && screen.orientation && screen.orientation.lock) {
+          // Catch and silently ignore orientation lock errors so it NEVER blocks the race start
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      } else {
+        document.body.classList.remove('is-racing-mobile');
+        if (screen && screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('portrait').catch(() => {});
+        } else if (screen && screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      }
+    } catch (e) {
+      console.warn("Orientation enforcement skipped:", e);
+    }
   }
 }
 

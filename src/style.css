@@ -2872,3 +2872,64 @@ html, body {
 
 
 
+
+/* ==========================================================================
+   MOBILE ORIENTATION OVERLAY
+   ========================================================================== */
+.orientation-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 99999;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.orientation-message {
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.device-rotate-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  animation: rotateDevice 2s infinite ease-in-out;
+}
+
+@keyframes rotateDevice {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+  100% { transform: rotate(90deg); }
+}
+
+.orientation-message h2 {
+  color: var(--primary-accent);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.orientation-message p {
+  color: #94a3b8;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Force Landscape Overlay ONLY during race on mobile */
+@media (max-width: 900px) and (orientation: portrait) {
+  body.is-racing-mobile .orientation-overlay {
+    display: flex !important;
+  }
+  body.is-racing-mobile #hud-container,
+  body.is-racing-mobile #touch-controls {
+    display: none !important;
+  }
+}
+

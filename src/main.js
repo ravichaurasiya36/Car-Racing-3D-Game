@@ -535,6 +535,8 @@ class GameApp {
     const isOffRoadSand = offRoadDrag > 0;
     this.vfxManager.update(delta, speedKmH, this.carController.steerAngle, activeInput.forward, activeInput.backward, isGarageMode, this.racingCar, isOffRoadSand);
 
+    const isDesertApex = this.racingTrack && this.racingTrack.trackId === 'desert_apex';
+
     // 6. Update Third-Person Follow Camera Tracking
     this.followCamera.update(
       delta,
@@ -542,7 +544,8 @@ class GameApp {
       speedKmH,
       this.raceManager.state === RaceState.MENU,
       this.raceManager.state === RaceState.START_SCREEN,
-      this.raceManager.state === RaceState.GARAGE
+      this.raceManager.state === RaceState.GARAGE,
+      isDesertApex
     );
 
     // 7. Update HUD Speedometer Telemetry

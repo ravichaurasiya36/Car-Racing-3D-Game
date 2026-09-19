@@ -40,7 +40,7 @@ export class FollowCamera {
     this.shakeIntensity = Math.min(0.6, Math.max(this.shakeIntensity, intensity));
   }
 
-  update(delta, heading, speedKmH = 0, isMenuMode = false, isStartScreenMode = false, isGarageMode = false) {
+  update(delta, heading, speedKmH = 0, isMenuMode = false, isStartScreenMode = false, isGarageMode = false, isDesertApex = false) {
     if (!this.targetMesh) return;
 
     const targetPos = this.targetMesh.position;
@@ -106,8 +106,15 @@ export class FollowCamera {
     const idealZ = targetPos.z - Math.cos(heading) * this.distance;
 
     // Calculate ideal camera lookAt target slightly ahead of the car
+    let effectiveLookAtHeight = this.lookAtHeight;
+    if (isDesertApex) {
+      // Counteract the vast Desert horizon perspective shift at high speeds
+      const desertSpeedRatio = Math.min(1.0, Math.max(0, speedKmH) / 350);
+      effectiveLookAtHeight += desertSpeedRatio * 0.45;
+    }
+
     const idealLookX = targetPos.x + Math.sin(heading) * 2.0;
-    const idealLookY = targetPos.y + this.lookAtHeight;
+    const idealLookY = targetPos.y + effectiveLookAtHeight;
     const idealLookZ = targetPos.z + Math.cos(heading) * 2.0;
 
     // Smooth Framerate-Independent Lerp
@@ -115,9 +122,9 @@ export class FollowCamera {
 
     this.currentPosition.set(idealX, idealY, idealZ);
 
-    this.currentLookAt.x += (idealLookX - this.currentLookAt.x) * lerpFactor;
+    this.currentLookAt.x = idealLookX;
     this.currentLookAt.y += (idealLookY - this.currentLookAt.y) * lerpFactor;
-    this.currentLookAt.z += (idealLookZ - this.currentLookAt.z) * lerpFactor;
+    this.currentLookAt.z = idealLookZ;
 
     // 1. Dynamic Speed FOV Scaling (Base 60° -> Max 70° at 200 KM/H)
     const speedRatio = Math.min(1.0, Math.max(0, speedKmH) / 200);

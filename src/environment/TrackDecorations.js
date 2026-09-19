@@ -8,6 +8,9 @@ export class TrackDecorations {
     this.racingTrack = racingTrack;
     this.meshGroup = new THREE.Group();
 
+    this.isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+      (navigator.maxTouchPoints > 2 && window.innerWidth <= 1024);
+
     this.curve = racingTrack.getCenterlineCurve();
     this.roadWidth = racingTrack.getRoadWidth();
 
@@ -225,7 +228,7 @@ export class TrackDecorations {
     }
 
     // 4. 32 Leaf Puff Clusters arranged along outer perimeter (leaving sky gaps through center)
-    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.4, 1);
+    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.4, this.isMobile ? 0 : 1);
     const pos = clusterBaseGeo.attributes.position;
     for (let v = 0; v < pos.count; v++) {
       const vx = pos.getX(v);
@@ -327,7 +330,7 @@ export class TrackDecorations {
     }
 
     // 28 Leaf Clusters forming elevated dome
-    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.35, 1);
+    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.35, this.isMobile ? 0 : 1);
     const clusterLocs = [
       { x: 0, y: 9.0, z: 0, s: 1.4 },
       { x: 1.5, y: 8.5, z: 1.1, s: 1.2 },
@@ -400,7 +403,7 @@ export class TrackDecorations {
     }
 
     // 36 Wide Canopy Leaf Clusters
-    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.5, 1);
+    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.5, this.isMobile ? 0 : 1);
     const clusterLocs = [
       { x: 0, y: 6.8, z: 0, s: 1.4 },
       { x: 2.2, y: 6.4, z: 1.4, s: 1.25 },
@@ -466,7 +469,7 @@ export class TrackDecorations {
       trunkParts.push(bough);
     }
 
-    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.3, 1);
+    const clusterBaseGeo = new THREE.DodecahedronGeometry(1.3, this.isMobile ? 0 : 1);
     const clusterLocs = [
       { x: 0, y: 6.2, z: 0, s: 1.3 },
       { x: 1.8, y: 5.4, z: 0.6, s: 1.15 },
@@ -639,7 +642,7 @@ export class TrackDecorations {
 
     // Roadside Organic Bushes & Shrubs (strictly outside guardrail at 11.5m to 16m)
     const bushCount = Math.min(350, bushPositions.length);
-    const bushGeo = new THREE.DodecahedronGeometry(1.2, 1);
+    const bushGeo = new THREE.DodecahedronGeometry(1.2, this.isMobile ? 0 : 1);
     const bushMat = new THREE.MeshStandardMaterial({ color: 0x388e3c, roughness: 0.8 });
     const bushMesh = new THREE.InstancedMesh(bushGeo, bushMat, bushCount);
     bushMesh.castShadow = true;

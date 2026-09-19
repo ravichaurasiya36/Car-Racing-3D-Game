@@ -684,6 +684,10 @@ export class TrackDecorations {
         rockMesh.setMatrixAt(rockIdx++, dummy.matrix);
       }
     }
+    
+    // Fix: Unused instances default to (0,0,0). Trim the count to the exact number spawned.
+    rockMesh.count = rockIdx;
+    
     rockMesh.instanceMatrix.needsUpdate = true;
     this.meshGroup.add(rockMesh);
   }

@@ -8,6 +8,9 @@ export class ForestWildlife {
     this.roadWidth = roadWidth;
     this.getNearestTrackPoint = getNearestTrackPoint;
 
+    this.isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+      (navigator.maxTouchPoints > 2 && window.innerWidth <= 1024);
+
     this.group = new THREE.Group();
     
     // Arrays for animated entities
@@ -207,8 +210,11 @@ export class ForestWildlife {
   }
 
   buildDeerHerds() {
-    // 5 Asymmetric Deer Groups placed in deep forest away from the track
-    const herdConfigs = [
+    // Asymmetric Deer Groups placed in deep forest away from the track
+    const herdConfigs = this.isMobile ? [
+      { u: 0.24, side: -1, dist: 23.0, count: 2, isStag: [true, false] },
+      { u: 0.86, side: 1, dist: 25.0, count: 1, isStag: [true] }
+    ] : [
       { u: 0.08, side: 1, dist: 20.5, count: 1, isStag: [true] }, // Lone Stag looking over clearing
       { u: 0.24, side: -1, dist: 23.0, count: 3, isStag: [true, false, false] }, // Family trio in forest glade
       { u: 0.44, side: 1, dist: 28.0, count: 4, isStag: [true, false, false, false] }, // Grazing herd
@@ -339,8 +345,10 @@ export class ForestWildlife {
   }
 
   buildSmallAnimals() {
-    // 3 Rabbit Groups near grass bushes
-    const rabbitLocs = [
+    // Rabbit Groups near grass bushes
+    const rabbitLocs = this.isMobile ? [
+      { u: 0.16, side: 1, dist: 22, count: 2 }
+    ] : [
       { u: 0.16, side: 1, dist: 22, count: 2 },
       { u: 0.56, side: -1, dist: 26, count: 3 },
       { u: 0.78, side: 1, dist: 24, count: 2 }
@@ -422,9 +430,10 @@ export class ForestWildlife {
   }
 
   buildBirds() {
-    // 1. Perched Birds on Tree Canopy Heights (10 birds across forest)
-    for (let b = 0; b < 10; b++) {
-      const u = (b / 10) + 0.04;
+    // 1. Perched Birds on Tree Canopy Heights
+    const perchedBirdCount = this.isMobile ? 3 : 10;
+    for (let b = 0; b < perchedBirdCount; b++) {
+      const u = (b / perchedBirdCount) + 0.04;
       const p = this.curve.getPointAt(u);
       const tangent = this.curve.getTangentAt(u).normalize();
       const right = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
@@ -445,24 +454,26 @@ export class ForestWildlife {
       });
     }
 
-    // 2. Flying Bird Flock Traveling High Above Forest (5 birds flying in formation)
-    this.flyingFlockGroup = new THREE.Group();
-    
-    for (let f = 0; f < 5; f++) {
-      const birdObj = this.createBirdMesh();
-      birdObj.mesh.position.set((f - 2) * 1.8, (f % 2) * 0.4, -f * 1.4);
-      birdObj.mesh.rotation.y = Math.PI; // Flying forward
-      this.flyingFlockGroup.add(birdObj.mesh);
+    // 2. Flying Bird Flock Traveling High Above Forest (Desktop Only)
+    if (!this.isMobile) {
+      this.flyingFlockGroup = new THREE.Group();
+      
+      for (let f = 0; f < 5; f++) {
+        const birdObj = this.createBirdMesh();
+        birdObj.mesh.position.set((f - 2) * 1.8, (f % 2) * 0.4, -f * 1.4);
+        birdObj.mesh.rotation.y = Math.PI; // Flying forward
+        this.flyingFlockGroup.add(birdObj.mesh);
 
-      this.flyingBirds.push({
-        wingR: birdObj.wingR,
-        wingL: birdObj.wingL,
-        seed: f
-      });
+        this.flyingBirds.push({
+          wingR: birdObj.wingR,
+          wingL: birdObj.wingL,
+          seed: f
+        });
+      }
+
+      this.flyingFlockGroup.position.set(0, 28, 0);
+      this.group.add(this.flyingFlockGroup);
     }
-
-    this.flyingFlockGroup.position.set(0, 28, 0);
-    this.group.add(this.flyingFlockGroup);
   }
 
   // --- 4. NATURAL FOREST FLOOR LIFE (MUSHROOMS, LOGS, ROCKS, FERNS) ---
@@ -670,6 +681,8 @@ export class ForestWildlife {
   // --- 6. PROCEDURAL BEHAVIOR ANIMATION LOOP ---
 
   update(delta, elapsedTime) {
+    if (this.isMobile) return; // Completely disable expensive CPU animation math on mobile
+
     // 1. Deer Idle & Grazing Animations (Head tilt, ear wiggling, body breathing pitch)
     this.deerEntities.forEach(d => {
       const time = elapsedTime + d.animSeed;

@@ -1460,6 +1460,16 @@ html, body {
   transform: translateY(0);
 }
 
+/* Enable vertical scrolling for Race Start on mobile landscape */
+@media (max-height: 600px) and (orientation: landscape) {
+  #race-start-overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
+  }
+}
+
 /* Mobile Responsiveness for Race Start Screen */
 @media (max-width: 680px) {
   #race-start-overlay {

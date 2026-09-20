@@ -94,7 +94,15 @@ class GameApp {
     // 9. Build Race State Machine, Main Menu, Garage, Race Results, Best Times & Leaderboard Overlays
     this.raceManager = new RaceManager(this.racingTrack);
     this.raceHUD = new RaceHUD(this.raceManager, this.carController);
-    this.bestTimesPanel = new BestTimesPanel();
+    this.bestTimesPanel = new BestTimesPanel(
+      () => {
+        // BACK button pressed from Best Times Panel -> Return to Main Menu
+        if (this.mainMenu) {
+          const selectedVehicle = this.vehicleManager.getSelectedVehicle('player1');
+          this.mainMenu.show(selectedVehicle);
+        }
+      }
+    );
 
     this.leaderboardPanel = new LeaderboardPanel(
       () => {

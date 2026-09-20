@@ -1,5 +1,6 @@
 export class BestTimesPanel {
-  constructor() {
+  constructor(onBackCallback) {
+    this.onBackCallback = onBackCallback;
     this.overlay = null;
     this.buildDOM();
   }
@@ -92,6 +93,9 @@ export class BestTimesPanel {
       closeBtn.addEventListener('click', (e) => {
         e.preventDefault();
         this.hide();
+        if (typeof this.onBackCallback === 'function') {
+          this.onBackCallback();
+        }
       });
     }
 
@@ -99,6 +103,9 @@ export class BestTimesPanel {
     this.overlay.addEventListener('click', (e) => {
       if (e.target === this.overlay) {
         this.hide();
+        if (typeof this.onBackCallback === 'function') {
+          this.onBackCallback();
+        }
       }
     });
   }

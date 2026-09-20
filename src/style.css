@@ -856,9 +856,9 @@ html, body {
   }
 
   .touch-controls-overlay {
-    bottom: calc(0.5rem + var(--sab));
-    left: calc(0.8rem + var(--sal));
-    right: calc(0.8rem + var(--sar));
+    bottom: calc(1rem + var(--sab));
+    left: calc(1.5rem + var(--sal));
+    right: calc(1.5rem + var(--sar));
   }
 
   .steer-cluster .touch-btn {

@@ -7,19 +7,18 @@ export class RacingTrack {
     this.meshGroup = new THREE.Group();
     this.roadWidth = 16.0; // Track width in world units
 
-    // 1. Create Closed-Loop Track Curve Path
+    // 1. Create Closed-Loop Track Curve Path (New Layout: Spacious Non-Intersecting R-L-R-L Peanut)
     this.controlPoints = [
-      new THREE.Vector3(0, 0, 0),         // Start/Finish Line
-      new THREE.Vector3(0, 0, 120),       // Main Straightaway
-      new THREE.Vector3(40, 0, 190),      // Turn 1 (Sweeping Right)
-      new THREE.Vector3(130, 0, 190),     // Turn 2
-      new THREE.Vector3(180, 0, 120),     // Turn 3
-      new THREE.Vector3(150, 0, 30),      // Turn 4 (S-Curve Entry)
-      new THREE.Vector3(70, 0, -30),      // Turn 5 (S-Curve Exit)
-      new THREE.Vector3(120, 0, -130),    // Back Straight
-      new THREE.Vector3(50, 0, -190),     // Hairpin Bend
-      new THREE.Vector3(-50, 0, -140),    // Turn 7
-      new THREE.Vector3(-60, 0, -40)      // Final Turn into Main Straight
+      new THREE.Vector3(0, 0, 0),         // Start/Finish (Bottom left of indent)
+      new THREE.Vector3(300, 0, 0),       // Main Straight
+      
+      new THREE.Vector3(500, 0, -200),    // Broad RIGHT (Entry)
+      new THREE.Vector3(400, 0, -500),    // Broad RIGHT (Apex)
+      new THREE.Vector3(100, 0, -400),    // Broad LEFT (Indent)
+      
+      new THREE.Vector3(-300, 0, -500),   // Broad RIGHT (Entry)
+      new THREE.Vector3(-400, 0, -200),   // Broad RIGHT (Apex)
+      new THREE.Vector3(-100, 0, -100)    // Broad LEFT (Indent)
     ];
 
     this.curve = new THREE.CatmullRomCurve3(this.controlPoints, true, 'catmullrom', 0.5);

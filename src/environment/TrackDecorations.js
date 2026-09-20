@@ -90,7 +90,7 @@ export class TrackDecorations {
   }
 
   getNearestTrackPoint(x, z) {
-    const samples = 120;
+    const samples = 1000;
     let minSqDist = Infinity;
     let bestPoint = null;
 
@@ -122,7 +122,7 @@ export class TrackDecorations {
       metalness: 0.04
     });
 
-    const ringRadius = 560;
+    const ringRadius = 1600;
     const ridgeSegments = 64;
 
     const mountainGeo = new THREE.CylinderGeometry(ringRadius + 80, ringRadius - 40, 110, ridgeSegments, 12, true);

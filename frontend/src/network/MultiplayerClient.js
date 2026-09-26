@@ -1,5 +1,5 @@
 export class MultiplayerClient {
-  constructor(serverUrl = 'ws://localhost:8080') {
+  constructor(serverUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080') {
     this.serverUrl = serverUrl;
     this.ws = null;
     

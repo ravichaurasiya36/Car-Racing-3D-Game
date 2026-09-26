@@ -1,0 +1,12 @@
+{
+  "name": "car-racing-3d-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
+  }
+}

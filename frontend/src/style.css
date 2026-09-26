@@ -2945,3 +2945,307 @@ html, body {
   }
 }
 
+/* ==========================================================================
+   PHASE 1 MULTIPLAYER USERNAME SCREEN
+   ========================================================================== */
+.multiplayer-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: radial-gradient(circle at 50% 50%, rgba(10, 14, 26, 0.85) 0%, rgba(5, 7, 14, 0.6) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.multiplayer-container.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.multiplayer-glass-card {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(14, 18, 32, 0.86);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  padding: 2.2rem;
+  box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.55), 0 0 35px 0 rgba(0, 240, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: startCardSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.multiplayer-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.username-entry-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.username-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 1.5px;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.username-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.username-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.username-input.error {
+  border-color: #ff3366;
+  box-shadow: 0 0 15px rgba(255, 51, 102, 0.2);
+}
+
+.username-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.username-error {
+  color: #ff3366;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-top: -4px;
+}
+
+.multiplayer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-multiplayer-continue {
+  flex: 2;
+  justify-content: center;
+}
+
+.btn-multiplayer-back {
+  flex: 1;
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .multiplayer-glass-card {
+    padding: 1.5rem;
+  }
+  
+  .multiplayer-actions {
+    flex-direction: column;
+  }
+}
+
+/* ==========================================================================
+   PHASE 2 MULTIPLAYER LOBBY SCREEN
+   ========================================================================== */
+.lobby-view-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.room-code-display-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.room-code-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 2px;
+}
+
+.room-code-value {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 4px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.copy-btn {
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.4rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.copy-icon {
+  font-size: 1rem;
+}
+
+.copy-confirmation {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--accent-cyan);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.copy-confirmation.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.room-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.room-player-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+}
+
+.room-player-item.you {
+  background: rgba(0, 240, 255, 0.05);
+  border-left-color: var(--accent-cyan);
+}
+
+.room-player-item.waiting {
+  opacity: 0.6;
+}
+
+.player-icon {
+  font-size: 1.25rem;
+}
+
+.player-name {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: #fff;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.player-car-name {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+.cycle-car-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.cycle-car-btn:hover {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: var(--accent-cyan);
+  transform: scale(1.1);
+}
+
+.room-code-input {
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 1.5rem;
+}
+
+.join-placeholder-msg {
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-top: 8px;
+  background: rgba(0, 240, 255, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-cyan);
+}

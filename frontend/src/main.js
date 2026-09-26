@@ -26,6 +26,9 @@ import { RaceResultsScreen } from './ui/RaceResultsScreen.js';
 import { BestTimesPanel } from './ui/BestTimesPanel.js';
 import { LeaderboardPanel } from './ui/LeaderboardPanel.js';
 import { TrackSelectScreen } from './ui/TrackSelectScreen.js';
+import { MultiplayerUsernameScreen } from './ui/MultiplayerUsernameScreen.js';
+import { MultiplayerLobbyScreen } from './ui/MultiplayerLobbyScreen.js';
+import { MultiplayerResultsScreen } from './ui/MultiplayerResultsScreen.js';
 
 class GameApp {
   constructor() {
@@ -38,6 +41,32 @@ class GameApp {
     this.engine = new Engine('game-canvas');
     this.sceneManager = new SceneManager();
     this.inputManager = new InputManager();
+
+    // PHASE 6: Multiplayer Movement Sync State
+    this.networkUpdateTimer = 0;
+    this.opponentCar = null;
+    this.opponentCarController = null;
+    this.opponentTransformTarget = null;
+    this.opponentPlayerId = null;
+    this.opponentLap = 0;
+    this.opponentFinished = false;
+
+    // Multiplayer HUD Overlay
+    this.opponentStatusElement = document.createElement('div');
+    this.opponentStatusElement.id = 'opponent-status-overlay';
+    this.opponentStatusElement.style.cssText = 'position: absolute; top: 1rem; right: 50%; transform: translateX(50%); background: rgba(0,0,0,0.7); color: #fff; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; display: none; z-index: 1000; text-transform: uppercase; border: 1px solid #3b82f6;';
+    
+    // Defer appending until DOM is ready, or do it now if container exists
+    const hudContainer = document.getElementById('hud-container');
+    if (hudContainer) {
+      hudContainer.appendChild(this.opponentStatusElement);
+    } else {
+      // In case HUD container is built later or DOM isn't fully loaded, append it when possible
+      window.addEventListener('DOMContentLoaded', () => {
+        const hc = document.getElementById('hud-container');
+        if (hc) hc.appendChild(this.opponentStatusElement);
+      });
+    }
 
     // 2. Audio & Visual Effects Systems
     this.audioManager = new AudioManager();
@@ -103,6 +132,195 @@ class GameApp {
         }
       }
     );
+
+    this.multiplayerUsernameScreen = new MultiplayerUsernameScreen(
+      (username) => {
+        // CONTINUE clicked with valid username
+        console.log(`🎮 Multiplayer Phase 1: Username saved locally as "${username}"`);
+        this.multiplayerUsername = username;
+        
+        this.hideAllScreens();
+        if (this.multiplayerLobbyScreen) {
+          const selectedVehicleId = this.vehicleManager.getSelectedVehicle('player1').id;
+          this.multiplayerLobbyScreen.show(this.multiplayerUsername, selectedVehicleId, this.selectedTrack);
+        }
+      },
+      () => {
+        // BACK button pressed from Multiplayer Screen -> Return to Main Menu
+        if (this.mainMenu) {
+          const selectedVehicle = this.vehicleManager.getSelectedVehicle('player1');
+          this.mainMenu.show(selectedVehicle);
+        }
+      }
+    );
+
+    this.multiplayerLobbyScreen = new MultiplayerLobbyScreen(
+      () => {
+        // BACK pressed from Lobby -> Return to Username Screen
+        this.hideAllScreens();
+        if (this.multiplayerUsernameScreen) {
+          this.multiplayerUsernameScreen.show();
+        }
+      },
+      this.vehicleManager
+    );
+
+    this.multiplayerResultsScreen = new MultiplayerResultsScreen(
+      () => {
+        // RETURN TO LOBBY pressed
+        this.hideAllScreens();
+        this.raceManager.showMenu();
+        if (this.multiplayerLobbyScreen) {
+          this.multiplayerLobbyScreen.switchView('create');
+          this.multiplayerLobbyScreen.show();
+        }
+      },
+      () => {
+        // REMATCH pressed
+        if (this.multiplayerClient) {
+          this.multiplayerClient.requestRematch();
+        }
+      }
+    );
+
+    // Wire up multiplayer transform callback
+    if (this.multiplayerLobbyScreen && this.multiplayerLobbyScreen.multiplayerClient) {
+      this.multiplayerClient = this.multiplayerLobbyScreen.multiplayerClient;
+      this.multiplayerClient.onPlayerTransform = (playerId, transform) => {
+        if (playerId === this.opponentPlayerId) {
+          this.opponentTransformTarget = transform;
+        }
+      };
+      
+      // Wrap onRoomState to manage opponent car lifecycle
+      const originalOnRoomState = this.multiplayerClient.onRoomState;
+      this.multiplayerClient.onRoomState = (players, roomTrack) => {
+        if (originalOnRoomState) originalOnRoomState.call(this.multiplayerLobbyScreen, players, roomTrack);
+        
+        // Force sync local track to Host's authoritative track
+        if (roomTrack && this.selectedTrack !== roomTrack && this.activeTrackId !== roomTrack) {
+          console.log(`[MULTIPLAYER] Syncing track to host's selection: ${roomTrack}`);
+          this.switchTrack(roomTrack);
+        }
+        
+        const otherPlayer = players.find(p => p.playerId !== this.multiplayerClient.currentPlayerId);
+        if (otherPlayer) {
+          this.opponentPlayerId = otherPlayer.playerId;
+          this.ensureOpponentCarExists(otherPlayer.selectedCar, otherPlayer.paintId);
+        } else {
+          this.opponentPlayerId = null;
+          this.removeOpponentCar();
+        }
+      };
+
+      this.multiplayerClient.onRaceStarting = (startAt) => {
+        console.log(`[MULTIPLAYER] Race starting at ${startAt}`);
+        this.opponentLap = 0;
+        this.opponentFinished = false;
+        
+        this.hideAllScreens();
+        this.applySelectedVehicleToCar();
+        this.resetGridPositions();
+        this.setMobileOrientation('landscape');
+        this.raceManager.startMultiplayerCountdown(startAt);
+      };
+
+      this.multiplayerClient.onRaceAborted = () => {
+        console.log(`[MULTIPLAYER] Race aborted due to disconnect.`);
+        if (this.raceManager.state === RaceState.COUNTDOWN) {
+          this.raceManager.showMenu();
+          this.hideAllScreens();
+          if (this.multiplayerLobbyScreen) {
+            this.multiplayerLobbyScreen.show();
+            this.multiplayerLobbyScreen.switchView('create');
+          }
+        }
+      };
+
+      this.multiplayerClient.onPlayerDisconnected = (playerId, username) => {
+        console.log(`[MULTIPLAYER] Opponent disconnected: ${username} (${playerId})`);
+        
+        // Remove opponent car and stop updates
+        if (this.opponentPlayerId === playerId) {
+           this.removeOpponentCar();
+           this.opponentPlayerId = null;
+        }
+
+        // Show disconnected message
+        if (this.opponentStatusElement) {
+          this.opponentStatusElement.textContent = `${username} DISCONNECTED`;
+          this.opponentStatusElement.style.borderColor = '#ef4444';
+          this.opponentStatusElement.style.color = '#ef4444';
+          this.opponentStatusElement.style.display = 'block';
+        }
+
+        // Handle rematch waiting state
+        if (this.multiplayerResultsScreen) {
+           this.multiplayerResultsScreen.resetRematchState();
+           
+           if (this.multiplayerResultsScreen.finalModal && this.multiplayerResultsScreen.finalModal.classList.contains('active')) {
+             this.multiplayerResultsScreen.hide();
+             this.raceManager.showMenu();
+             if (this.multiplayerLobbyScreen) {
+               this.multiplayerLobbyScreen.show();
+               this.multiplayerLobbyScreen.switchView('create');
+             }
+           }
+        }
+      };
+
+      this.multiplayerClient.onDisconnected = () => {
+         console.log(`[MULTIPLAYER] Local connection lost.`);
+         if (this.opponentStatusElement) {
+           this.opponentStatusElement.textContent = `CONNECTION LOST`;
+           this.opponentStatusElement.style.borderColor = '#ef4444';
+           this.opponentStatusElement.style.color = '#ef4444';
+           this.opponentStatusElement.style.display = 'block';
+         }
+         
+         // Clean up opponent
+         this.removeOpponentCar();
+         this.opponentPlayerId = null;
+      };
+
+      this.multiplayerClient.onRaceProgress = (playerId, progressState) => {
+        if (playerId === this.opponentPlayerId) {
+          this.opponentLap = progressState.lap;
+          this.opponentFinished = progressState.finished;
+        }
+      };
+
+      this.multiplayerClient.onRaceWinner = (winnerUsername) => {
+        console.log(`[MULTIPLAYER] Winner declared: ${winnerUsername}`);
+        if (this.multiplayerResultsScreen) {
+          this.multiplayerResultsScreen.showWinnerBanner(winnerUsername);
+        }
+      };
+
+      this.multiplayerClient.onFinalRaceResult = (results) => {
+        console.log(`[MULTIPLAYER] Final results received`);
+        if (this.multiplayerResultsScreen) {
+          this.multiplayerResultsScreen.showFinalResults(results);
+        }
+      };
+
+      this.multiplayerClient.onRematchStatus = (status) => {
+        console.log(`[MULTIPLAYER] Rematch status:`, status);
+        if (status.allConfirmed) {
+          // Both confirmed. Reset to lobby.
+          this.hideAllScreens();
+          this.raceManager.showMenu();
+          if (this.multiplayerLobbyScreen) {
+            this.multiplayerLobbyScreen.show();
+            this.multiplayerLobbyScreen.switchView('create');
+          }
+        } else {
+          if (this.multiplayerResultsScreen) {
+            this.multiplayerResultsScreen.updateRematchStatus(status);
+          }
+        }
+      };
+    }
 
     this.leaderboardPanel = new LeaderboardPanel(
       () => {
@@ -294,6 +512,13 @@ class GameApp {
         if (this.leaderboardPanel) {
           this.leaderboardPanel.show(entries, this.leaderboardManager, 'player1');
         }
+      },
+      () => {
+        // MULTIPLAYER Clicked -> Show Username Screen
+        this.hideAllScreens();
+        if (this.multiplayerUsernameScreen) {
+          this.multiplayerUsernameScreen.show();
+        }
       }
     );
 
@@ -308,10 +533,19 @@ class GameApp {
 
     this.raceManager.onLapComplete = (completedLaps) => {
       this.audioManager.playLapSound();
+      if (this.multiplayerClient && this.multiplayerClient.isConnected) {
+        this.multiplayerClient.sendLapUpdate(completedLaps);
+      }
     };
 
     this.raceManager.onRaceFinish = () => {
       this.audioManager.playFinishFanfare();
+
+      if (this.multiplayerClient && this.multiplayerClient.isConnected) {
+        this.multiplayerClient.sendPlayerFinished();
+        // BYPASS single-player results screen in multiplayer!
+        return;
+      }
 
       const selectedVehicle = this.vehicleManager.getSelectedVehicle('player1');
       const cust = this.vehicleManager.getCustomization('player1', selectedVehicle.id);
@@ -404,6 +638,9 @@ class GameApp {
     if (this.raceResultsScreen) this.raceResultsScreen.hide();
     if (this.bestTimesPanel) this.bestTimesPanel.hide();
     if (this.leaderboardPanel) this.leaderboardPanel.hide();
+    if (this.multiplayerUsernameScreen) this.multiplayerUsernameScreen.hide();
+    if (this.multiplayerLobbyScreen) this.multiplayerLobbyScreen.hide();
+    if (this.multiplayerResultsScreen) this.multiplayerResultsScreen.hide();
   }
 
   resetGridPositions() {
@@ -412,8 +649,23 @@ class GameApp {
     const startTangent = curve.getTangentAt(0).normalize();
     const initialHeading = Math.atan2(startTangent.x, startTangent.z);
 
-    // Single Player Player 1 Grid Position at Start Line Center
-    this.carController.setPosition(startPos.x, startPos.y + 0.05, startPos.z);
+    let offsetX = 0;
+    let offsetZ = 0;
+
+    // Multiplayer Grid Offset
+    if (this.multiplayerClient && this.multiplayerClient.isConnected && this.opponentPlayerId) {
+      const rightX = -startTangent.z;
+      const rightZ = startTangent.x;
+      
+      const isLeft = this.multiplayerClient.currentPlayerId < this.opponentPlayerId;
+      const lateralOffset = isLeft ? -3.0 : 3.0;
+
+      offsetX = rightX * lateralOffset;
+      offsetZ = rightZ * lateralOffset;
+    }
+
+    // Grid Position at Start Line
+    this.carController.setPosition(startPos.x + offsetX, startPos.y + 0.05, startPos.z + offsetZ);
     this.carController.setHeading(initialHeading);
     this.carController.speed = 0;
     if (this.boundarySystem) {
@@ -499,6 +751,37 @@ class GameApp {
     }
   }
 
+  ensureOpponentCarExists(carId, paintId) {
+    if (!this.opponentCar) {
+      this.opponentCar = new RacingCar();
+      const opponentMesh = this.opponentCar.getMesh();
+      this.sceneManager.add(opponentMesh);
+      this.opponentCarController = new CarController(this.opponentCar);
+      this.opponentTransformTarget = null;
+      console.log(`[MULTIPLAYER] Opponent car spawned.`);
+    }
+    
+    const vehicle = this.vehicleManager.getVehicle(carId);
+    if (vehicle) {
+      this.opponentCar.setVehicleVariant(vehicle.id);
+      const resolvedPaintId = paintId || vehicle.defaultPaintId;
+      const paintObj = this.vehicleManager.getPaintObj(resolvedPaintId);
+      const defaultWheelObj = this.vehicleManager.getWheelStyleObj('stock');
+      this.opponentCar.applyCustomization({ paintObj: paintObj, wheelStyleObj: defaultWheelObj });
+    }
+  }
+
+  removeOpponentCar() {
+    if (this.opponentCar) {
+      const mesh = this.opponentCar.getMesh();
+      this.sceneManager.remove(mesh);
+      this.opponentCar = null;
+      this.opponentCarController = null;
+      this.opponentTransformTarget = null;
+      console.log(`[MULTIPLAYER] Opponent car removed.`);
+    }
+  }
+
   applySelectedVehicleToCar() {
     const selectedVehicle = this.vehicleManager.getSelectedVehicle('player1');
     const cust = this.vehicleManager.getCustomization('player1', selectedVehicle.id);
@@ -534,6 +817,63 @@ class GameApp {
 
     // 3. Apply Track Boundary Distance Constraint
     this.boundarySystem.constrain(this.carController, delta);
+
+    // MULTIPLAYER SYNC
+    if ((isRacing || this.raceManager.state === RaceState.COUNTDOWN) && this.multiplayerClient && this.multiplayerClient.isConnected) {
+      this.networkUpdateTimer += delta;
+      if (this.networkUpdateTimer >= 0.05) { // ~20 FPS
+        this.networkUpdateTimer = 0;
+        const pos = this.carController.getPosition();
+        this.multiplayerClient.sendPlayerTransform({
+          x: pos.x,
+          y: pos.y,
+          z: pos.z,
+          heading: this.carController.getHeading()
+        });
+      }
+
+      if (this.opponentCarController && this.opponentTransformTarget) {
+        const target = this.opponentTransformTarget;
+        const currentPos = this.opponentCarController.getPosition();
+        const currentHeading = this.opponentCarController.getHeading();
+        
+        const lerpFactor = Math.min(1.0, delta * 15);
+        const newX = THREE.MathUtils.lerp(currentPos.x, target.x, lerpFactor);
+        const newY = THREE.MathUtils.lerp(currentPos.y, target.y, lerpFactor);
+        const newZ = THREE.MathUtils.lerp(currentPos.z, target.z, lerpFactor);
+        this.opponentCarController.setPosition(newX, newY, newZ);
+        
+        let angleDiff = target.heading - currentHeading;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        const newHeading = currentHeading + angleDiff * lerpFactor;
+        this.opponentCarController.setHeading(newHeading);
+        
+        const speed = Math.sqrt(Math.pow(newX - currentPos.x, 2) + Math.pow(newZ - currentPos.z, 2)) / delta;
+        if (this.opponentCar) {
+          this.opponentCar.setPhysicsState(speed, 0, false);
+          this.opponentCar.update(delta, elapsedTime);
+        }
+      }
+      
+      // Update opponent HUD
+      if (this.opponentStatusElement) {
+        this.opponentStatusElement.style.display = 'block';
+        if (this.opponentFinished) {
+          this.opponentStatusElement.textContent = 'OPPONENT FINISHED';
+          this.opponentStatusElement.style.borderColor = '#4ade80';
+          this.opponentStatusElement.style.color = '#4ade80';
+        } else {
+          this.opponentStatusElement.textContent = `OPPONENT LAP ${this.opponentLap} / ${this.raceManager.totalLaps}`;
+          this.opponentStatusElement.style.borderColor = '#3b82f6';
+          this.opponentStatusElement.style.color = '#fff';
+        }
+      }
+    } else {
+      if (this.opponentStatusElement) {
+        this.opponentStatusElement.style.display = 'none';
+      }
+    }
 
     // 4. Update RacingCar Visual Model (Wheel Spin, Steering Angles, Dynamic Brake Lights)
     this.racingCar.update(delta, elapsedTime);

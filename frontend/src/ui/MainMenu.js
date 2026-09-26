@@ -1,10 +1,11 @@
 export class MainMenu {
-  constructor(onPlayCallback, onTrackSelectCallback, onGarageCallback, onBestTimesCallback, onLeaderboardCallback) {
+  constructor(onPlayCallback, onTrackSelectCallback, onGarageCallback, onBestTimesCallback, onLeaderboardCallback, onMultiplayerCallback) {
     this.onPlayCallback = onPlayCallback;
     this.onTrackSelectCallback = onTrackSelectCallback;
     this.onGarageCallback = onGarageCallback;
     this.onBestTimesCallback = onBestTimesCallback;
     this.onLeaderboardCallback = onLeaderboardCallback;
+    this.onMultiplayerCallback = onMultiplayerCallback;
     this.menuOverlay = null;
     this.buildMenuDOM();
   }
@@ -54,10 +55,9 @@ export class MainMenu {
             <span class="btn-text">LEADERBOARD</span>
           </button>
 
-          <button id="btn-multiplayer" class="menu-btn btn-secondary disabled" title="2-Player Multiplayer coming soon">
+          <button id="btn-multiplayer" class="menu-btn btn-secondary" title="Enter Multiplayer">
             <span class="btn-icon">🎮</span>
-            <span class="btn-text">2 PLAYER / MULTIPLAYER</span>
-            <span class="badge-tag">SOON</span>
+            <span class="btn-text">MULTIPLAYER</span>
           </button>
 
           <button id="btn-settings" class="menu-btn btn-secondary disabled" title="Settings coming soon">
@@ -130,6 +130,15 @@ export class MainMenu {
       leaderboardBtn.addEventListener('click', () => {
         if (typeof this.onLeaderboardCallback === 'function') {
           this.onLeaderboardCallback();
+        }
+      });
+    }
+
+    const multiplayerBtn = this.menuOverlay.querySelector('#btn-multiplayer');
+    if (multiplayerBtn) {
+      multiplayerBtn.addEventListener('click', () => {
+        if (typeof this.onMultiplayerCallback === 'function') {
+          this.onMultiplayerCallback();
         }
       });
     }

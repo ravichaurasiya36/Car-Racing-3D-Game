@@ -37,9 +37,12 @@ export class RaceManager {
     this.startTime = 0;
     this.totalTime = 0;
     this.lapStartTime = 0;
-    this.currentLapTime = 0;
     this.bestLapTime = null;
     this.lapTimes = [];
+
+    // Multiplayer Sync
+    this.isMultiplayer = false;
+    this.multiplayerStartAt = null;
 
     // Wrong-Way Detection
     this.wrongWayTimer = 0;
@@ -80,6 +83,12 @@ export class RaceManager {
     this.isWrongWay = false;
   }
 
+  startMultiplayerCountdown(startAt) {
+    this.startCountdown();
+    this.isMultiplayer = true;
+    this.multiplayerStartAt = startAt;
+  }
+
   update(delta, carController) {
     if (!carController) return;
 
@@ -90,7 +99,17 @@ export class RaceManager {
 
     // 1. COUNTDOWN STATE
     if (this.state === RaceState.COUNTDOWN) {
-      this.countdownTimer += delta;
+      if (this.isMultiplayer && this.multiplayerStartAt) {
+        // Calculate elapsed time from the intended start of the 3.8s countdown
+        const msUntilGo = this.multiplayerStartAt - Date.now();
+        // this.countdownTimer represents time elapsed since the countdown began.
+        // It goes from 0 to 3.8.
+        // If msUntilGo is 3800, timer is 0. If msUntilGo is 0, timer is 3.8.
+        this.countdownTimer = 3.8 - (msUntilGo / 1000);
+        if (this.countdownTimer < 0) this.countdownTimer = 0;
+      } else {
+        this.countdownTimer += delta;
+      }
 
       if (this.countdownTimer < 1.0) {
         this.countdownText = '3';
@@ -109,6 +128,10 @@ export class RaceManager {
         this.hasReachedMidpoint = false;
         this.hasReachedFarSector = false;
         this.lapCooldown = 3.0;
+        
+        // Reset multiplayer flag so we don't interfere with restarts later
+        this.isMultiplayer = false;
+        this.multiplayerStartAt = null;
       }
 
       // Check for countdown step change to trigger audio callback
